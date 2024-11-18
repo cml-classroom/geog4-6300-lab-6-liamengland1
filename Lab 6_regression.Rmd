@@ -48,44 +48,150 @@ We will start by looking at data for 2020.
 **Question 1** _Create histograms for NDVI, max temp., min temp., rain, and population, and water in 2020 as well as elevation. Based on these graphs, assess the normality of these variables._
 
 ```{r}
-#Code goes here.
+ggplot(lab6_data, aes(x=ndvi_20_med)) +
+  geom_histogram() 
+
+ggplot(lab6_data, aes(x=maxtemp_20_med)) +
+  geom_histogram() 
+
+ggplot(lab6_data, aes(x=mintemp_20_med)) +
+  geom_histogram() 
+
+ggplot(lab6_data, aes(x=rain_20_sum)) +
+  geom_histogram() 
+
+ggplot(lab6_data, aes(x=pop_20)) +
+  geom_histogram() 
+
+ggplot(lab6_data, aes(x=water_20_pct)) +
+  geom_histogram() 
+
+ggplot(lab6_data, aes(x=elev_med)) +
+  geom_histogram() 
 ```
 
-{Your assessment of the variables' normality goes here.}
+ndvi_20_med does not appear to be normally distributed. The histogram does not resemble a bell curve and the data is right skewed.
+
+maxtemp_20_med does not appear to be normally distributed. The histogram does not resemble a bell curve and the data is left skewed.
+
+mintemp_20_med does not appear to be normally distributed. The histogram does not resemble a bell curve and the data is left skewed.
+
+rain_20_sum does not appear to be normally distributed. The histogram does not resemble a bell curve and the data is right skewed.
+
+pop_20 does not appear to be normally distributed. The histogram does not resemble a bell curve and the data is right skewed.
+
+water_20_pct does not appear to be normally distributed. The histogram does not resemble a bell curve and the data is right skewed.
+
+elev_med does not appear to be normally distributed. The histogram does not resemble a bell curve and the data is right skewed.
 
 **Question 2** _Use tmap to map these same variables using Jenks natural breaks as the classification method. For an extra challenge, use `tmap_arrange` to plot all maps in a single figure._
 
 ```{r}
+library(tmap)
+#tm_shape(lab6_data) +
+#  tm_polygons("ndvi_20_med")
+
+
+map_ndvi <- qtm(lab6_data, fill="ndvi_20_med", polygons.style = "jenks", polygons.palette ="YlGn", layout.legend.position = c("left", "bottom"), layout.legend.title.size=0.65, layout.legend.width = 1)
+map_maxtemp <- qtm(lab6_data, fill="maxtemp_20_med", polygons.style = "jenks", layout.legend.position = c("left", "bottom"), layout.legend.title.size=0.65, layout.legend.width = 1)
+map_mintemp <- qtm(lab6_data, fill="mintemp_20_med", polygons.style = "jenks", polygons.palette = "-Blues", layout.legend.position = c("left", "bottom"), layout.legend.title.size=0.65, layout.legend.width = 1)
+map_rain <- qtm(lab6_data, fill="rain_20_sum", polygons.style = "jenks", polygons.palette = "Greens", layout.legend.position = c("left", "bottom"), layout.legend.title.size=0.65, layout.legend.width = 1)
+map_pop <- qtm(lab6_data, fill="pop_20", polygons.style = "jenks", layout.legend.position = c("left", "bottom"), layout.legend.title.size=0.65, layout.legend.width = 1)
+map_water <- qtm(lab6_data, fill="water_20_pct", polygons.style = "jenks", polygons.palette = "YlGnBu", layout.legend.position = c("left", "bottom"), layout.legend.title.size=0.65, layout.legend.width = 1)
+map_elevation <- qtm(lab6_data, fill="elev_med", polygons.style = "jenks", polygons.palette = "-plasma", layout.legend.position = c("left", "bottom"), layout.legend.title.size=0.65, layout.legend.width = 1)
+
+tmap_arrange(map_ndvi, map_maxtemp, map_mintemp, map_rain, map_pop, map_water, map_elevation)
 
 ```
 
 
 **Question 3** _Based on the maps from question 3, summarise major patterns you see in the spatial distribution of these data from any of your variables of interest. How do they appear to be associated with the NDVI variable?_
 
-{Your response here.}
+The biggest "hotspot" of high NDVI is in Southeast Australia close to the coast. This area has lower median minimum temperatures, more rain, and areas of higher population than most other areas of the country. Southeast Australia also has the highest median elevation of any area in the country. This appears to suggest an association between NDVI and these variables: the more cold, rainy, populous, and elevated an area is, the higher its NDVI/vegetation index is.
 
 **Question 4** _Create univariate models for each of the variables listed in question 1, with NDVI in 2020 as the dependent variable. Print a summary of each model. Write a summary of those results that indicates the direction, magnitude, and significance for each model coefficient._
 
 ```{r}
+model_maxtemp<-lm(ndvi_20_med~maxtemp_20_med, data=lab6_data)
+model_mintemp<-lm(ndvi_20_med~mintemp_20_med, data=lab6_data)
+model_rain<-lm(ndvi_20_med~rain_20_sum, data=lab6_data)
+model_pop<-lm(ndvi_20_med~pop_20, data=lab6_data)
+model_water<-lm(ndvi_20_med~water_20_pct, data=lab6_data)
+model_elev<-lm(ndvi_20_med~elev_med, data=lab6_data)
 
+summary(model_maxtemp)
+summary(model_mintemp)
+summary(model_rain)
+summary(model_pop)
+summary(model_water)
+summary(model_elev)
 ```
 
-{Discussion here}
+NDVI and max temp have a statistically significant relationship. For every 1-degree increase in median max temp, the NDVI decreases by 0.0130902. The R-squared is 0.20 suggesting that only a small amount of variance (20%) in NDVI is explained by median max temp.
+
+NDVI and min temp have a statistically significant relationship. For every 1-degree increase in median min temp, the NDVI decreases by 0.012282. The R-squared is only 0.14 suggesting that only a small amount of variance (14%) in NDVI is explained by median max temp.
+
+NDVI and rainfall have a statistically significant relationship. For every 1mm increase in rainfall, the NDVI increases by approx. one-one millionth. The R-squared is 0.42 suggesting that a substantial amount of variance (42%) in NDVI is explained by the amount of rainfall.
+
+NDVI and population have a statistically significant relationship. For every 1 person increase to the population, the NDVI increases by 1.500 * 10^(-6). The R-squared is 0.12 suggesting that only a a small amount of variance (12%) in NDVI is explained by population.
+
+NDVI and water cover do not have a statistically significant relationship. The p-value is 0.249 which is much greater than 0.05.
+
+NDVI and elevation have a statistically significant relationship. For every 1 meter increase in median elevation, the NDVI increases by 1.787 * 10^(-4). The R-squared is 0.05 suggesting that practically none of the variance (5%) in NDVI is explained by elevation.
 
 **Question 5** _Create a multivariate regression model with the variables of interest, choosing EITHER max or min temperature (but not both) You may also choose to leave out any variables that were insignificant in Q4. Use the univariate models as your guide. Call the results._
 
 ```{r}
-#Code goes here
+model_multivariate<-lm(ndvi_20_med~mintemp_20_med+rain_20_sum+pop_20+elev_med, data=lab6_data)
+
+summary(model_multivariate)
 ```
 
 **Question 6** _Summarize the results of the multivariate model. What are the direction, magnitude, and significance of each coefficient? How did it change from the univariate models you created in Q4 (if at all)? What do the R2 and F-statistic values tell you about overall model fit?_
 
-{Response goes here}
+The coefficient of mintemp_20_med is -1.391e-02. For every one degree increase in min temp, NDVI decreases by 0.01391. This result is similar to that of the univariate model. Min temp and NDVI have a highly statistically significant relationship with an extremely small p value.
+
+The coefficient of rain_20_sum is 9.420e-07. For each mm increase in rainfall, NDVI increases by 9.420e-07. This result is similar to that of the univariate model. Rainfall amount and NDVI have a highly statistically significant relationship with an extremely small p value. 
+
+The coefficient of pop_20 is 2.424e-07. For every 1 person increase in population, NDVI increases by 2.424e-07. The regression coefficient from the univariate model is still extremely small but is about 6 times larger than the population variable's regression coefficient in the multivariate model. Population and NDVI have a statistically significant relationship with a p value of 0.02. 
+
+The coefficient of elev_med is 1.028e-04. For every one meter increase in median elevation, NDVI increases by 1.028e-04. This result is similar to that of the univariate model. Median elevation and NDVI have a highly statistically significant relationship with an extremely small p value.
+
 
 **Question 7** _Use a histogram and a map to assess the normality of residuals and any spatial autocorrelation. Summarise any notable patterns that you see._
 
 ```{r}
-#Code goes here
+library(spdep)
+
+lab6_data$residuals <- residuals(model_multivariate)
+hist(lab6_data$residuals)
+
+australia_grid_nb <- poly2nb(lab6_data, queen=TRUE)
+grid_weight <- nb2listw(australia_grid_nb,style="W",zero.policy=TRUE)
+
+# Moran's I test
+
+moran.test(lab6_data$ndvi_20_med,grid_weight)
+
+moran.mc(lab6_data$ndvi_20_med,grid_weight,nsim=499)
+
+# Getis-Ord Gi*
+
+local_g<-localG(lab6_data$ndvi_20_med,grid_weight)
+  
+lab6_data$localG<-local_g
+
+# identifies clusters of high and low spatial autocorrelation
+
+lab6_data <- lab6_data %>%
+  mutate(localG_recode=case_when(localG <= -1.96~"Cold",
+                                 localG < 1.96~"No value",
+                                 localG >= 1.96~"Hot"))
+
+tm_shape(lab6_data)+
+  tm_polygons("localG_recode")
+
+
 ```
 
 {Summary goes here}
@@ -100,10 +206,7 @@ We will start by looking at data for 2020.
 
 **Question 9** _How would you summarise the results of this model in a sentence or two? In addition, looking at the full model and your diagnostics, do you feel this is a model that provides meaningful results? Explain your answer._
 
-```{r}
-Discussion here
-```
-
+{Discussion here}
 
 **Disclosure of assistance:** _Besides class materials, what other sources of assistance did you use while completing this lab? These can include input from classmates, relevant material identified through web searches (e.g., Stack Overflow), or assistance from ChatGPT or other AI tools. How did these sources support your own learning in completing this lab?_
 
