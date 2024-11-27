@@ -165,57 +165,70 @@ library(spdep)
 
 lab6_data$residuals <- residuals(model_multivariate)
 hist(lab6_data$residuals)
+shapiro.test(lab6_data$residuals)
+#ggplot(lab6_data,aes(sample=residuals))+
+#  stat_qq()+stat_qq_line()
 
 australia_grid_nb <- poly2nb(lab6_data, queen=TRUE)
 grid_weight <- nb2listw(australia_grid_nb,style="W",zero.policy=TRUE)
-
-# Moran's I test
 
 moran.test(lab6_data$ndvi_20_med,grid_weight)
 
 moran.mc(lab6_data$ndvi_20_med,grid_weight,nsim=499)
 
-# Getis-Ord Gi*
-
 local_g<-localG(lab6_data$ndvi_20_med,grid_weight)
   
 lab6_data$localG<-local_g
-
-# identifies clusters of high and low spatial autocorrelation
 
 lab6_data <- lab6_data %>%
   mutate(localG_recode=case_when(localG <= -1.96~"Cold",
                                  localG < 1.96~"No value",
                                  localG >= 1.96~"Hot"))
 
-tm_shape(lab6_data)+
-  tm_polygons("localG_recode")
-
+tm_shape(lab6_data) +
+  tm_polygons(
+    "localG_recode",
+    palette = c("Cold" = "blue", "Hot" = "red", "No value" = "grey"),
+    title = "NDVI hot/cold spots"
+  )
 
 ```
 
-{Summary goes here}
+
+The histogram of the residuals is asymmetrical with more residuals falling between -1 and -0.2 than between 0.2 and 1 (the largest positive residual is only 0.25), so the residuals are not normally distributed. I double-checked with the Shapiro-Wilk test which resulted in an extremely small p-value, so we reject that test's null hypothesis that the data are normally distributed.
+The Moran I statistic for NDVI is 0.715. 0 indicates no autocorrelation and 1 means perfect clustering of similar values. The I statistic of 0.715 means there is strong positive spatial autocorrelation and that areas with similar NDVI values (high or low) are spatially clustered together.
+As shown on the map, in eastern Australia there is a large "hotspot" where areas with high NDVI are clustered together. There is a cluster of low NDVI values in central southern Australia ("coldspot").
 
 **Question 8** _Assess any issues with multicollinearity or heteroskedastity in this model using the techniques shown in class. Run the appropriate tests and explain what their results show you._
 
 ```{r}
-#Code goes here
+library(car)
+library(lmtest)
+vif(model_multivariate)
+
+bptest(model_multivariate)
+
 ```
 
-{Interpretation goes here}
+I checked for multicollinearity using the VIF test. A value of 5 or more indicates severe levels of multicollinearity that can cause problems in a multivariate regression model. For each independent variable that is part of the model I created in question 5, VIF was calculated as around 1 which is a low value indicating negligible variance inflation from multicollinearity.
+
+To test for heteroskedastity I used the Breusch-Pagan test. The null hypothesis is that the residuals are distributed with equal variance and that the data are not heteroskedastic. The p-value is extremely small (p<2.2e-16) so we reject the null hypothesis and conclude that there is heteroskedasticity present in the model.  Heteroskedasticity means that the variance of the residuals is not constant across observations. This could indicate that my model is missing key variables that explain changes in NDVI, as the variability in NDVI is changing due to some unaccounted factor or factors. To try to solve this issue, I could look for more relevant variables and redefine my model to ensure all known variables that influence NDVI are included in the multivariate regression model.
 
 **Question 9** _How would you summarise the results of this model in a sentence or two? In addition, looking at the full model and your diagnostics, do you feel this is a model that provides meaningful results? Explain your answer._
 
-{Discussion here}
+The model shows statistically significant relationships between NDVI and minimum temperature, rainfall, population, and elevation. The directions and magnitude of these relationships were largely similar to those found in the previous univariate models. The overall model fit is indicated by a high R^2 value (0.65) suggesting that the model explains a substantial portion of the variance in NDVI. 
+
+However, the residuals are not normally distributed. Additionally, the Moran I statistic and map show strong positive spatial autocorrelation, and the Breusch-Pagan test confirms heteroskedasticity. While the model is statistically significant and defines a relationship between NDVI and several other factors, it might not provide the most reliable results when predicting NDVI because of the issues with the model. However, generally the results of the model can give a decent idea of what the NDVI of a location would be, based on its minimum temperature, rainfall, population, and elevation.
 
 **Disclosure of assistance:** _Besides class materials, what other sources of assistance did you use while completing this lab? These can include input from classmates, relevant material identified through web searches (e.g., Stack Overflow), or assistance from ChatGPT or other AI tools. How did these sources support your own learning in completing this lab?_
 
-{Response here.}
+Chatgpt, perplexity.ai, https://www.statology.org/breusch-pagan-test/, https://online.stat.psu.edu/stat462/node/180/, https://www.statisticshowto.com/morans-i/, https://pachterlab.github.io/voyager/articles/getisord_landing.html, https://mgimond.github.io/Spatial/spatial-autocorrelation.html,
+
+These tools supported my learning by assisting me in applying various statistical tests and interpreting their results in a meaningful way. A big part of it was reading about the test to refresh my memory on its purpose and what the null hypothesis was, etc.
 
 **Lab reflection:** _How do you feel about the work you did on this lab? Was it easy, moderate, or hard? What were the biggest things you learned by completing it?_
 
-{Discussion here.}
-
+This lab was moderately difficult. I feel like I did good work although I am annoyed that my model has issues, although I feel they are probably the same issues that others encountered while working on this lab. I learned how to apply univariate and multivariate regressions and assess the results and issues of the resulting models in order to answer a primary research question.  
 
 **Challenge question**
 
