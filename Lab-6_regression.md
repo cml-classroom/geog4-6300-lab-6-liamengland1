@@ -179,7 +179,7 @@ map_elevation <- qtm(lab6_data, fill="elev_med", polygons.style = "jenks", polyg
 tmap_arrange(map_ndvi, map_maxtemp, map_mintemp, map_rain, map_pop, map_water, map_elevation)
 ```
 
-![](Lab-6_regression_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](q2-fixed-plot.png)<!-- -->
 
 **Question 3** *Based on the maps from question 3, summarise major
 patterns you see in the spatial distribution of these data from any of
